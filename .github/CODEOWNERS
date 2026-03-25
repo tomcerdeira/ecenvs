@@ -1,0 +1,3 @@
+# Required for branch protection: pull requests need approval from a code owner.
+# Adjust the handle if your GitHub username changes.
+* @tomcerdeira
