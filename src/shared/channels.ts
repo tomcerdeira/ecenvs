@@ -7,6 +7,8 @@ export const IPC_CHANNELS = {
   GET_ENV_VARS: 'get-env-vars',
   SAVE_ENV_VARS: 'save-env-vars',
   GET_DEPLOYMENTS: 'get-deployments',
+  LIST_RECENTS: 'list-recents',
+  ADD_RECENT: 'add-recent',
 } as const;
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];

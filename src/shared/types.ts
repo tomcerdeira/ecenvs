@@ -34,6 +34,8 @@ export interface DeploymentInfo {
   desiredCount: number;
   pendingCount: number;
   runningCount: number;
+  /** Rolling deployment progress when available (ECS controller). */
+  rolloutState?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -74,9 +76,35 @@ export type GetEnvVarsForContainerData = {
 
 export type GetEnvVarsData = GetEnvVarsListContainersData | GetEnvVarsForContainerData;
 
+/** Plain key/value pairs only — used when registering a task definition revision. */
+export interface PlainEnvVar {
+  name: string;
+  value: string;
+}
+
 export interface SaveEnvVarsPayload extends ProfileRegionPayload {
   clusterArn: string;
   serviceName: string;
   containerName: string;
-  environment: EnvVar[];
+  environment: PlainEnvVar[];
+}
+
+/** Result after registering a new task definition and updating the service. */
+export interface SaveEnvVarsResult {
+  taskDefinitionArn: string;
+  serviceArn: string;
+  deploymentId?: string;
+}
+
+export interface RecentConnectionPayload {
+  profile: string;
+  region: string;
+  clusterArn: string;
+  serviceName: string;
+  containerName: string;
+}
+
+/** Stored in electron-store with `updatedAt` (ISO string). */
+export interface RecentConnection extends RecentConnectionPayload {
+  updatedAt: string;
 }

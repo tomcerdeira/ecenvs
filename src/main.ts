@@ -1,27 +1,59 @@
-import { app, BrowserWindow } from 'electron';
+import { BrowserWindow, app } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 
 import { registerIpcHandlers } from './main/ipc/handlers';
+import { rebuildAppMenu } from './main/menu';
+import { appStore } from './main/store';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
 }
 
+let saveBoundsTimer: ReturnType<typeof setTimeout> | null = null;
+
+function persistWindowBounds(win: BrowserWindow): void {
+  const b = win.getBounds();
+  appStore.set('windowState', {
+    x: b.x,
+    y: b.y,
+    width: b.width,
+    height: b.height,
+    isMaximized: win.isMaximized(),
+  });
+}
+
+function schedulePersistBounds(win: BrowserWindow): void {
+  if (saveBoundsTimer) clearTimeout(saveBoundsTimer);
+  saveBoundsTimer = setTimeout(() => {
+    saveBoundsTimer = null;
+    persistWindowBounds(win);
+  }, 500);
+}
+
 const createWindow = () => {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+  const saved = appStore.get('windowState');
+  const opts: Electron.BrowserWindowConstructorOptions = {
+    width: saved?.width ?? 800,
+    height: saved?.height ?? 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
-  });
+  };
+  if (saved && !saved.isMaximized) {
+    opts.x = saved.x;
+    opts.y = saved.y;
+  }
 
-  // and load the index.html of the app.
+  const mainWindow = new BrowserWindow(opts);
+
+  if (saved?.isMaximized) {
+    mainWindow.maximize();
+  }
+
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
@@ -31,17 +63,23 @@ const createWindow = () => {
   if (!app.isPackaged) {
     mainWindow.webContents.openDevTools();
   }
+
+  mainWindow.on('resize', () => schedulePersistBounds(mainWindow));
+  mainWindow.on('move', () => schedulePersistBounds(mainWindow));
+  mainWindow.on('close', () => {
+    if (saveBoundsTimer) clearTimeout(saveBoundsTimer);
+    persistWindowBounds(mainWindow);
+  });
+
+  return mainWindow;
 };
 
-// Register IPC before windows so the renderer can invoke on load.
 void app.whenReady().then(() => {
   registerIpcHandlers();
   createWindow();
+  rebuildAppMenu();
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
@@ -49,12 +87,8 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+    rebuildAppMenu();
   }
 });
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.

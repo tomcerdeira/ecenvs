@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
+import { Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
+import { Button } from '@renderer/components/ui/button';
 import { cn } from '@renderer/lib/utils';
 
 interface HeaderProps {
@@ -10,6 +13,8 @@ interface HeaderProps {
 }
 
 export function Header({ title, description, actions, className }: HeaderProps) {
+  const { resolvedTheme, setTheme } = useTheme();
+
   return (
     <header
       className={cn(
@@ -24,7 +29,23 @@ export function Header({ title, description, actions, className }: HeaderProps) 
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">{description}</p>
           ) : null}
         </div>
-        {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <Button
+            aria-label="Toggle light or dark theme"
+            className="size-9"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            size="icon"
+            type="button"
+            variant="outline"
+          >
+            {resolvedTheme === 'dark' ? (
+              <Sun aria-hidden className="size-4" />
+            ) : (
+              <Moon aria-hidden className="size-4" />
+            )}
+          </Button>
+          {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+        </div>
       </div>
     </header>
   );

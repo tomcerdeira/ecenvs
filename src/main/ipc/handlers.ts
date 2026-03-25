@@ -11,9 +11,15 @@ import type {
   GetEnvVarsPayload,
   ListClustersPayload,
   ListServicesPayload,
+  RecentConnection,
+  RecentConnectionPayload,
+  SaveEnvVarsPayload,
+  SaveEnvVarsResult,
   ServiceInfo,
 } from '@shared/types';
 import { listAwsProfiles } from '../services/aws-profiles';
+import { rebuildAppMenu } from '../menu';
+import { addRecentConnection, listRecentConnections } from '../store';
 import {
   createEcsClient,
   getContainerEnvironment,
@@ -22,6 +28,7 @@ import {
   getTaskDefinitionContainerNames,
   listAllClusterArns,
   listServiceInfos,
+  saveContainerPlainEnvironment,
 } from '../services/ecs-client';
 
 function isNonEmptyString(v: unknown): v is string {
@@ -171,14 +178,72 @@ export function registerIpcHandlers(): void {
     }
   );
 
-  ipcMain.handle(IPC_CHANNELS.SAVE_ENV_VARS, async (): Promise<ApiResult<{ saved: false }>> => {
-    return {
-      ok: false,
-      error: {
-        code: 'NOT_IMPLEMENTED',
-        message:
-          'Saving environment variables is not implemented yet (planned for a later commit).',
-      },
-    };
+  ipcMain.handle(IPC_CHANNELS.LIST_RECENTS, async (): Promise<ApiResult<RecentConnection[]>> => {
+    try {
+      return ok(listRecentConnections());
+    } catch (e) {
+      return fail(e);
+    }
   });
+
+  ipcMain.handle(
+    IPC_CHANNELS.ADD_RECENT,
+    async (_evt, payload: unknown): Promise<ApiResult<{ ok: true }>> => {
+      try {
+        const p = payload as RecentConnectionPayload;
+        if (
+          !isNonEmptyString(p?.profile) ||
+          !isNonEmptyString(p?.region) ||
+          !isNonEmptyString(p?.clusterArn) ||
+          !isNonEmptyString(p?.serviceName) ||
+          !isNonEmptyString(p?.containerName)
+        ) {
+          return failMsg('INVALID_PAYLOAD', 'All recent connection fields are required');
+        }
+        addRecentConnection({
+          profile: p.profile.trim(),
+          region: p.region.trim(),
+          clusterArn: p.clusterArn.trim(),
+          serviceName: p.serviceName.trim(),
+          containerName: p.containerName.trim(),
+        });
+        rebuildAppMenu();
+        return ok({ ok: true });
+      } catch (e) {
+        return fail(e);
+      }
+    }
+  );
+
+  ipcMain.handle(
+    IPC_CHANNELS.SAVE_ENV_VARS,
+    async (_evt, payload: unknown): Promise<ApiResult<SaveEnvVarsResult>> => {
+      try {
+        const p = payload as SaveEnvVarsPayload;
+        if (!isNonEmptyString(p?.profile) || !isNonEmptyString(p?.region)) {
+          return failMsg('INVALID_PAYLOAD', 'profile and region are required');
+        }
+        if (!isNonEmptyString(p?.clusterArn) || !isNonEmptyString(p?.serviceName)) {
+          return failMsg('INVALID_PAYLOAD', 'clusterArn and serviceName are required');
+        }
+        if (!isNonEmptyString(p?.containerName)) {
+          return failMsg('INVALID_PAYLOAD', 'containerName is required');
+        }
+        if (!Array.isArray(p.environment)) {
+          return failMsg('INVALID_PAYLOAD', 'environment must be an array');
+        }
+        const client = createEcsClient(p.profile, p.region);
+        const result = await saveContainerPlainEnvironment(
+          client,
+          p.clusterArn,
+          p.serviceName.trim(),
+          p.containerName.trim(),
+          p.environment
+        );
+        return ok(result);
+      } catch (e) {
+        return fail(e);
+      }
+    }
+  );
 }

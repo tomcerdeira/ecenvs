@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { ConnectionSelect } from '@renderer/components/connection/ConnectionSelect';
@@ -6,7 +6,13 @@ import { Button } from '@renderer/components/ui/button';
 import { SelectItem } from '@renderer/components/ui/select';
 import { Skeleton } from '@renderer/components/ui/skeleton';
 import { shortClusterArn } from '@renderer/lib/aws-display';
+import { listRecents } from '@renderer/lib/api';
 import { useConnectionStore } from '@renderer/stores/connection-store';
+import type { RecentConnection } from '@shared/types';
+
+function recentValue(r: RecentConnection): string {
+  return `${r.profile}\t${r.region}\t${r.clusterArn}\t${r.serviceName}\t${r.containerName}`;
+}
 
 export function ConnectionPanel() {
   const loadInitialData = useConnectionStore((s) => s.loadInitialData);
@@ -16,6 +22,7 @@ export function ConnectionPanel() {
   const setClusterArn = useConnectionStore((s) => s.setClusterArn);
   const setServiceName = useConnectionStore((s) => s.setServiceName);
   const setContainerName = useConnectionStore((s) => s.setContainerName);
+  const applyRecent = useConnectionStore((s) => s.applyRecent);
 
   const profile = useConnectionStore((s) => s.profile);
   const region = useConnectionStore((s) => s.region);
@@ -31,9 +38,28 @@ export function ConnectionPanel() {
 
   const loading = useConnectionStore((s) => s.loading);
 
+  const [recents, setRecents] = useState<RecentConnection[]>([]);
+  const [recentSelect, setRecentSelect] = useState('');
+
   useEffect(() => {
     void loadInitialData();
   }, [loadInitialData]);
+
+  useEffect(() => {
+    void listRecents()
+      .then(setRecents)
+      .catch(() => {});
+  }, [profile, region, clusterArn, serviceName, containerName]);
+
+  const recentItems = useMemo(
+    () =>
+      recents.map((r) => ({
+        value: recentValue(r),
+        label: `${r.profile} · ${r.serviceName} · ${r.containerName}`,
+        payload: r,
+      })),
+    [recents]
+  );
 
   const profileDisabled = loading.profiles && profiles.length === 0;
   const regionDisabled = loading.regions && regions.length === 0;
@@ -54,6 +80,35 @@ export function ConnectionPanel() {
       </div>
 
       <div className="mt-8 flex flex-col gap-6">
+        {recentItems.length > 0 ? (
+          <ConnectionSelect
+            id="conn-recents"
+            label="Recent connections"
+            placeholder="Apply a saved connection…"
+            value={recentSelect}
+            onValueChange={(v) => {
+              setRecentSelect(v);
+              const item = recentItems.find((x) => x.value === v);
+              if (item) {
+                void applyRecent({
+                  profile: item.payload.profile,
+                  region: item.payload.region,
+                  clusterArn: item.payload.clusterArn,
+                  serviceName: item.payload.serviceName,
+                  containerName: item.payload.containerName,
+                });
+              }
+              setRecentSelect('');
+            }}
+          >
+            {recentItems.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </ConnectionSelect>
+        ) : null}
+
         {profileDisabled ? (
           <div className="grid gap-2">
             <Skeleton className="h-4 w-24" />

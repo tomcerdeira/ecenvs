@@ -1,9 +1,15 @@
 import type {
   ApiResult,
+  DeploymentInfo,
   EnvVar,
+  GetDeploymentsPayload,
   GetEnvVarsPayload,
   ListClustersPayload,
   ListServicesPayload,
+  RecentConnection,
+  RecentConnectionPayload,
+  SaveEnvVarsPayload,
+  SaveEnvVarsResult,
   ServiceInfo,
 } from '@shared/types';
 
@@ -53,4 +59,20 @@ export async function getEnvironmentForContainer(
     throw new Error('Expected container environment from API');
   }
   return data.environment;
+}
+
+export async function getDeployments(payload: GetDeploymentsPayload): Promise<DeploymentInfo[]> {
+  return unwrap(await window.api.getDeployments(payload));
+}
+
+export async function saveEnvVars(payload: SaveEnvVarsPayload): Promise<SaveEnvVarsResult> {
+  return unwrap(await window.api.saveEnvVars(payload));
+}
+
+export async function listRecents(): Promise<RecentConnection[]> {
+  return unwrap(await window.api.listRecents());
+}
+
+export async function addRecent(payload: RecentConnectionPayload): Promise<void> {
+  unwrap(await window.api.addRecent(payload));
 }

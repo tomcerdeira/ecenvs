@@ -43,36 +43,61 @@ export function getDuplicateTrimmedNames(rows: EnvRow[]): Set<string> {
 }
 
 interface EnvState {
+  /** Editable plain environment variables. */
   rows: EnvRow[];
+  /** Read-only secret refs from the task definition (not sent on save). */
+  secretRows: EnvRow[];
   originalRows: EnvRow[];
   searchQuery: string;
   revealed: RevealedMap;
 
   hydrateFromRemote: (environment: EnvVar[]) => void;
+  /** Replace plain rows only (e.g. import). */
+  replacePlainRows: (rows: EnvRow[]) => void;
   clear: () => void;
   setSearch: (query: string) => void;
   updateRow: (id: string, patch: Partial<Pick<EnvRow, 'name' | 'value'>>) => void;
   addRow: () => void;
   removeRow: (id: string) => void;
   toggleReveal: (id: string) => void;
+  /** After successful save, sync baseline to current plain rows. */
+  markPlainSaved: () => void;
 }
 
-export const useEnvStore = create<EnvState>((set) => ({
+export const useEnvStore = create<EnvState>((set, get) => ({
   rows: [],
+  secretRows: [],
   originalRows: [],
   searchQuery: '',
   revealed: {},
 
   hydrateFromRemote: (environment) => {
-    const rows = environment.map((e) => ({
-      id: crypto.randomUUID(),
-      name: e.name,
-      value: e.value,
-    }));
+    const rows: EnvRow[] = [];
+    const secretRows: EnvRow[] = [];
+    for (const e of environment) {
+      const row = {
+        id: crypto.randomUUID(),
+        name: e.name,
+        value: e.value,
+      };
+      if (e.source === 'secret') {
+        secretRows.push(row);
+      } else {
+        rows.push(row);
+      }
+    }
     set({
       rows,
+      secretRows,
       originalRows: rows.map((r) => ({ ...r })),
       searchQuery: '',
+      revealed: {},
+    });
+  },
+
+  replacePlainRows: (nextRows) => {
+    set({
+      rows: nextRows,
       revealed: {},
     });
   },
@@ -80,6 +105,7 @@ export const useEnvStore = create<EnvState>((set) => ({
   clear: () => {
     set({
       rows: [],
+      secretRows: [],
       originalRows: [],
       searchQuery: '',
       revealed: {},
@@ -115,12 +141,25 @@ export const useEnvStore = create<EnvState>((set) => ({
       return { revealed: { ...s.revealed, [id]: next } };
     });
   },
+
+  markPlainSaved: () => {
+    const { rows } = get();
+    set({ originalRows: rows.map((r) => ({ ...r })) });
+  },
 }));
 
 export function selectFilteredRows(state: EnvState): EnvRow[] {
   const q = state.searchQuery.trim().toLowerCase();
-  if (!q) return state.rows;
-  return state.rows.filter((r) => r.name.toLowerCase().includes(q));
+  const plain = state.rows;
+  if (!q) return plain;
+  return plain.filter((r) => r.name.toLowerCase().includes(q));
+}
+
+export function selectFilteredSecretRows(state: EnvState): EnvRow[] {
+  const q = state.searchQuery.trim().toLowerCase();
+  const secrets = state.secretRows;
+  if (!q) return secrets;
+  return secrets.filter((r) => r.name.toLowerCase().includes(q));
 }
 
 export function selectIsDirty(state: EnvState): boolean {

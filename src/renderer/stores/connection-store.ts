@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { toast } from 'sonner';
 
 import * as api from '@renderer/lib/api';
-import type { ServiceInfo } from '@shared/types';
+import type { RecentConnectionPayload, ServiceInfo } from '@shared/types';
 
 export type ConnectionLoading = {
   profiles: boolean;
@@ -40,6 +40,9 @@ interface ConnectionState {
   setClusterArn: (value: string) => void;
   setServiceName: (value: string) => void;
   setContainerName: (value: string) => void;
+
+  /** Restore connection fields and reload clusters, services, and container names. */
+  applyRecent: (r: RecentConnectionPayload) => Promise<void>;
 }
 
 export const useConnectionStore = create<ConnectionState>((set, get) => ({
@@ -204,5 +207,60 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
 
   setContainerName: (value) => {
     set((s) => ({ ...s, containerName: value }));
+  },
+
+  applyRecent: async (r) => {
+    set({
+      profile: r.profile,
+      region: r.region,
+      clusterArn: '',
+      serviceName: '',
+      containerName: '',
+      clusters: [],
+      services: [],
+      containers: [],
+    });
+    set((s) => ({ ...s, loading: { ...s.loading, clusters: true } }));
+    try {
+      const clusters = await api.listClusters({ profile: r.profile, region: r.region });
+      set((s) => ({
+        ...s,
+        clusters,
+        clusterArn: r.clusterArn,
+        loading: { ...s.loading, clusters: false, services: true },
+      }));
+      const snap = get();
+      const services = await api.listServices({
+        profile: snap.profile,
+        region: snap.region,
+        clusterArn: snap.clusterArn,
+      });
+      set((s) => ({
+        ...s,
+        services,
+        serviceName: r.serviceName,
+        loading: { ...s.loading, services: false, containers: true },
+      }));
+      const snap2 = get();
+      const containers = await api.getContainerNamesForService({
+        profile: snap2.profile,
+        region: snap2.region,
+        clusterArn: snap2.clusterArn,
+        serviceName: snap2.serviceName,
+      });
+      set((s) => ({
+        ...s,
+        containers,
+        containerName: r.containerName,
+        loading: { ...s.loading, containers: false },
+      }));
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error('Failed to apply recent connection', { description: msg });
+      set((s) => ({
+        ...s,
+        loading: { ...idleLoading },
+      }));
+    }
   },
 }));

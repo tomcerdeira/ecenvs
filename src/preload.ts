@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
 
 import { IPC_CHANNELS } from '@shared/channels';
 import type {
@@ -9,7 +9,10 @@ import type {
   GetEnvVarsPayload,
   ListClustersPayload,
   ListServicesPayload,
+  RecentConnection,
+  RecentConnectionPayload,
   SaveEnvVarsPayload,
+  SaveEnvVarsResult,
   ServiceInfo,
 } from '@shared/types';
 
@@ -30,8 +33,32 @@ const api = {
   getEnvVars: (payload: GetEnvVarsPayload): Promise<ApiResult<GetEnvVarsData>> =>
     ipcRenderer.invoke(IPC_CHANNELS.GET_ENV_VARS, payload),
 
-  saveEnvVars: (payload: SaveEnvVarsPayload): Promise<ApiResult<{ saved: false }>> =>
+  saveEnvVars: (payload: SaveEnvVarsPayload): Promise<ApiResult<SaveEnvVarsResult>> =>
     ipcRenderer.invoke(IPC_CHANNELS.SAVE_ENV_VARS, payload),
+
+  listRecents: (): Promise<ApiResult<RecentConnection[]>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.LIST_RECENTS),
+
+  addRecent: (payload: RecentConnectionPayload): Promise<ApiResult<{ ok: true }>> =>
+    ipcRenderer.invoke(IPC_CHANNELS.ADD_RECENT, payload),
+
+  onThemeFromMain: (
+    handler: (mode: 'toggle' | 'light' | 'dark' | 'system') => void
+  ): (() => void) => {
+    const fn = (_e: IpcRendererEvent, mode: string) => {
+      if (mode === 'toggle' || mode === 'light' || mode === 'dark' || mode === 'system') {
+        handler(mode);
+      }
+    };
+    ipcRenderer.on('theme-from-main', fn);
+    return () => ipcRenderer.removeListener('theme-from-main', fn);
+  },
+
+  onApplyRecent: (handler: (r: RecentConnection) => void): (() => void) => {
+    const fn = (_e: IpcRendererEvent, r: RecentConnection) => handler(r);
+    ipcRenderer.on('apply-recent', fn);
+    return () => ipcRenderer.removeListener('apply-recent', fn);
+  },
 };
 
 contextBridge.exposeInMainWorld('api', api);

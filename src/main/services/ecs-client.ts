@@ -4,12 +4,22 @@ import {
   ECSClient,
   ListClustersCommand,
   ListServicesCommand,
+  RegisterTaskDefinitionCommand,
+  UpdateServiceCommand,
   type Deployment,
+  type RegisterTaskDefinitionRequest,
   type Service,
+  type TaskDefinition,
 } from '@aws-sdk/client-ecs';
 import { fromIni } from '@aws-sdk/credential-providers';
 
-import type { DeploymentInfo, EnvVar, ServiceInfo } from '@shared/types';
+import type {
+  DeploymentInfo,
+  EnvVar,
+  PlainEnvVar,
+  SaveEnvVarsResult,
+  ServiceInfo,
+} from '@shared/types';
 
 export function createEcsClient(profile: string, region: string): ECSClient {
   return new ECSClient({
@@ -120,6 +130,7 @@ function mapDeployment(d: Deployment): DeploymentInfo {
     desiredCount: d.desiredCount ?? 0,
     pendingCount: d.pendingCount ?? 0,
     runningCount: d.runningCount ?? 0,
+    rolloutState: d.rolloutState,
     createdAt: d.createdAt?.toISOString(),
     updatedAt: d.updatedAt?.toISOString(),
   };
@@ -185,4 +196,86 @@ export async function getContainerEnvironment(
     }
   }
   return env;
+}
+
+function taskDefinitionToRegisterInput(td: TaskDefinition): RegisterTaskDefinitionRequest {
+  return {
+    family: td.family ?? '',
+    taskRoleArn: td.taskRoleArn,
+    executionRoleArn: td.executionRoleArn,
+    networkMode: td.networkMode,
+    containerDefinitions: structuredClone(td.containerDefinitions ?? []),
+    volumes: td.volumes,
+    placementConstraints: td.placementConstraints,
+    requiresCompatibilities: td.requiresCompatibilities,
+    cpu: td.cpu,
+    memory: td.memory,
+    pidMode: td.pidMode,
+    ipcMode: td.ipcMode,
+    proxyConfiguration: td.proxyConfiguration,
+    inferenceAccelerators: td.inferenceAccelerators,
+    ephemeralStorage: td.ephemeralStorage,
+    runtimePlatform: td.runtimePlatform,
+    enableFaultInjection: td.enableFaultInjection,
+  };
+}
+
+/**
+ * Registers a new task definition revision with updated plain environment for one container,
+ * then updates the service to use that revision.
+ */
+export async function saveContainerPlainEnvironment(
+  client: ECSClient,
+  clusterArn: string,
+  serviceName: string,
+  containerName: string,
+  plainEnvironment: PlainEnvVar[]
+): Promise<SaveEnvVarsResult> {
+  const taskDefArn = await getServiceTaskDefinitionArn(client, clusterArn, serviceName);
+  const describeOut = await client.send(
+    new DescribeTaskDefinitionCommand({ taskDefinition: taskDefArn })
+  );
+  const td = describeOut.taskDefinition;
+  if (!td?.family) {
+    throw new Error('DescribeTaskDefinition returned no task definition family');
+  }
+
+  const registerInput = taskDefinitionToRegisterInput(td);
+  const defs = registerInput.containerDefinitions ?? [];
+  const idx = defs.findIndex((c) => c.name === containerName);
+  if (idx === -1) {
+    throw new Error(`Container not found in task definition: ${containerName}`);
+  }
+
+  const envPairs = plainEnvironment
+    .filter((e) => e.name.trim().length > 0)
+    .map((e) => ({ name: e.name.trim(), value: e.value }));
+
+  const nextDefs = [...defs];
+  nextDefs[idx] = {
+    ...nextDefs[idx],
+    environment: envPairs,
+  };
+  registerInput.containerDefinitions = nextDefs;
+
+  const regOut = await client.send(new RegisterTaskDefinitionCommand(registerInput));
+  const newTaskDefArn = regOut.taskDefinition?.taskDefinitionArn;
+  if (!newTaskDefArn) {
+    throw new Error('RegisterTaskDefinition returned no task definition ARN');
+  }
+
+  const updateOut = await client.send(
+    new UpdateServiceCommand({
+      cluster: clusterArn,
+      service: serviceName,
+      taskDefinition: newTaskDefArn,
+    })
+  );
+  const svc = updateOut.service;
+  const primary = svc?.deployments?.find((d) => d.status === 'PRIMARY');
+  return {
+    taskDefinitionArn: newTaskDefArn,
+    serviceArn: svc?.serviceArn ?? '',
+    deploymentId: primary?.id,
+  };
 }
