@@ -11,6 +11,7 @@
     "sourceMap": true,
     "outDir": "dist",
     "moduleResolution": "bundler",
+    "jsx": "react-jsx",
     "resolveJsonModule": true,
     "noEmit": true,
     "baseUrl": ".",

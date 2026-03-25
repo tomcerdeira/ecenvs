@@ -7,9 +7,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Dynamic import: Forge bundles the config with esbuild; @tailwindcss/vite is ESM-only.
 export default defineConfig(async () => {
-  const { default: tailwindcss } = await import('@tailwindcss/vite');
+  const [{ default: tailwindcss }, { default: react }] = await Promise.all([
+    import('@tailwindcss/vite'),
+    import('@vitejs/plugin-react'),
+  ]);
   return {
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), react()],
     resolve: {
       alias: {
         '@shared': path.resolve(__dirname, 'src/shared'),
