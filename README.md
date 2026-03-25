@@ -38,6 +38,15 @@ npm run package
 npm run make
 ```
 
+## Packaging
+
+Local installers are produced with `npm run make`. Artifacts land under `out/make/` (for example `zip` and `dmg` on macOS).
+
+- **Icons**: Source files live in [`assets/icons/`](./assets/icons/) (`icon.png`, `icon.icns`, `icon.ico`). Replace the placeholder artwork with your branding; large binaries can be tracked with [Git LFS](https://git-lfs.com/) if you prefer not to bloat the repo.
+- **Publishing to GitHub**: `npm run publish` uploads build artifacts to GitHub Releases. In CI, set `GITHUB_TOKEN` with permission to create releases and upload assets. **Do not commit tokens**; use repository secrets only.
+- **Auto-update**: The app uses [`update-electron-app`](https://github.com/electron/update-electron-app) in a packaged build, which checks [Electron’s update service](https://update.electronjs.org) for releases published from this repository. **macOS** auto-updates in production expect a **Developer ID** signed app, **hardened runtime**, and **notarization**; unsigned `.dmg` installs do not get a reliable auto-update experience.
+- **Linux**: Electron’s built-in auto-updater does not support Linux; distribute `.deb`/`.rpm` through your own channels.
+
 ## Tech
 
 - Electron Forge

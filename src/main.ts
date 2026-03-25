@@ -2,6 +2,7 @@ import { BrowserWindow, app } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 
+import { initAutoUpdate } from './main/auto-update';
 import { registerIpcHandlers } from './main/ipc/handlers';
 import { rebuildAppMenu } from './main/menu';
 import { appStore } from './main/store';
@@ -75,6 +76,7 @@ const createWindow = () => {
 };
 
 void app.whenReady().then(() => {
+  initAutoUpdate();
   registerIpcHandlers();
   createWindow();
   rebuildAppMenu();
