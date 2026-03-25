@@ -11,8 +11,8 @@ export function DeployPanel({
   polling: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
           Deployments
         </h3>
@@ -28,7 +28,7 @@ export function DeployPanel({
           No deployment data yet. Save to push a new revision.
         </p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-1.5">
           {deployments.map((d) => (
             <li key={d.id}>
               <DeployCard deployment={d} />

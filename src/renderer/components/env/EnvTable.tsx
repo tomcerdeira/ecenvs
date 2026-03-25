@@ -7,6 +7,8 @@ import {
   TableRow,
 } from '@renderer/components/ui/table';
 import { EnvRow } from '@renderer/components/env/EnvRow';
+import { useShallow } from 'zustand/react/shallow';
+
 import {
   getDuplicateTrimmedNames,
   selectFilteredRows,
@@ -15,8 +17,8 @@ import {
 } from '@renderer/stores/env-store';
 
 export function EnvTable() {
-  const filtered = useEnvStore(selectFilteredRows);
-  const filteredSecrets = useEnvStore(selectFilteredSecretRows);
+  const filtered = useEnvStore(useShallow(selectFilteredRows));
+  const filteredSecrets = useEnvStore(useShallow(selectFilteredSecretRows));
   const rows = useEnvStore((s) => s.rows);
   const secretRows = useEnvStore((s) => s.secretRows);
   const duplicateNames = getDuplicateTrimmedNames(rows);
@@ -50,7 +52,7 @@ export function EnvTable() {
               </TableRow>
             ) : (
               filtered.map((row) => {
-                const trimmed = row.name.trim();
+                const trimmed = String(row.name ?? '').trim();
                 const isDup = Boolean(trimmed && duplicateNames.has(trimmed));
                 return (
                   <EnvRow
@@ -102,7 +104,7 @@ export function EnvTable() {
                     isDuplicateName={false}
                     isSecret
                     key={row.id}
-                    nameSuffix={row.name.trim() || row.id.slice(0, 8)}
+                    nameSuffix={String(row.name ?? '').trim() || row.id.slice(0, 8)}
                     onDelete={() => {}}
                     onNameChange={() => {}}
                     onToggleReveal={() => toggleReveal(row.id)}

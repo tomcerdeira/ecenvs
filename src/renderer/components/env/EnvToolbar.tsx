@@ -25,6 +25,7 @@ import {
 } from '@renderer/lib/parsers';
 import {
   getDuplicateTrimmedNames,
+  selectFilteredPlainCount,
   selectIsDirty,
   useEnvStore,
   type EnvRow,
@@ -62,11 +63,7 @@ export function EnvToolbar({
   const originalRows = useEnvStore((s) => s.originalRows);
   const replacePlainRows = useEnvStore((s) => s.replacePlainRows);
   const rowCount = rows.length;
-  const filteredCount = useEnvStore((s) => {
-    const q = s.searchQuery.trim().toLowerCase();
-    if (!q) return s.rows.length;
-    return s.rows.filter((r) => r.name.toLowerCase().includes(q)).length;
-  });
+  const filteredCount = useEnvStore(selectFilteredPlainCount);
   const dirty = useEnvStore(selectIsDirty);
   const searching = Boolean(searchQuery.trim());
 

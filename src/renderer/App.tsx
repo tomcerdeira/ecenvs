@@ -9,7 +9,6 @@ import { EnvTable } from '@renderer/components/env/EnvTable';
 import { EnvToolbar } from '@renderer/components/env/EnvToolbar';
 import { Header } from '@renderer/components/layout/Header';
 import { MainPanel } from '@renderer/components/layout/MainPanel';
-import { Sidebar } from '@renderer/components/layout/Sidebar';
 import { Toaster } from '@renderer/components/ui/sonner';
 import { TooltipProvider } from '@renderer/components/ui/tooltip';
 import { useDeploymentPolling } from '@renderer/hooks/useDeploymentPolling';
@@ -148,67 +147,56 @@ function AppContent() {
 
   return (
     <TooltipProvider>
-      <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
+      <div className="relative flex h-screen min-h-0 flex-col overflow-hidden bg-background text-foreground">
         <div
           aria-hidden
-          className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_-25%,oklch(0.55_0.14_275/0.14),transparent_55%)]"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_50%_40%_at_100%_0%,oklch(0.45_0.12_265/0.08),transparent_50%)]"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none fixed inset-0 opacity-[0.4] [background-image:linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:64px_64px]"
+          className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_90%_50%_at_50%_-20%,oklch(0.55_0.14_275/0.12),transparent_60%)]"
         />
 
-        <div className="relative z-10 flex min-h-screen flex-col md:flex-row">
-          <Sidebar />
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            <Header
-              description="Connect to an ECS cluster and service, pick a container, then edit plain environment variables and save to deploy a new task definition revision."
-              title="Connection"
-            />
+        <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden">
+          <Header />
+          <ConnectionPanel />
+          {showEnvSection ? (
             <MainPanel>
-              <div className="flex flex-col gap-10">
-                <ConnectionPanel />
-                {showEnvSection ? (
-                  <section className="rounded-xl border border-border/80 bg-card/40 p-6 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04),0_24px_48px_-24px_rgba(0,0,0,0.55)] backdrop-blur-md sm:p-8">
-                    <div className="flex flex-col gap-1">
-                      <h2 className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                        Environment variables
-                      </h2>
-                      <p className="text-sm text-muted-foreground">
-                        Values are masked by default. Plain variables can be saved to ECS; secret
-                        references stay in the task definition and are not edited here.
-                      </p>
+              <section className="flex min-h-0 flex-1 flex-col">
+                <div className="shrink-0 border-b border-border/60 pb-4">
+                  <h2 className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                    Environment variables
+                  </h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Values are masked by default. Plain variables can be saved to ECS; secret
+                    references stay in the task definition and are not edited here.
+                  </p>
+                </div>
+
+                {envLoading ? (
+                  <div
+                    aria-busy="true"
+                    aria-live="polite"
+                    className="flex flex-1 items-center gap-2 py-8 text-sm text-muted-foreground"
+                  >
+                    <Loader2 aria-hidden className="size-4 animate-spin" />
+                    Loading environment…
+                  </div>
+                ) : (
+                  <>
+                    <div className="shrink-0 border-b border-border/60 py-4">
+                      <EnvToolbar
+                        connectionReady={connectionReady}
+                        onSaveDeploy={handleSaveDeploy}
+                      />
                     </div>
-                    <div className="mt-8 flex flex-col gap-6">
-                      {envLoading ? (
-                        <div
-                          aria-busy="true"
-                          aria-live="polite"
-                          className="flex items-center gap-2 text-sm text-muted-foreground"
-                        >
-                          <Loader2 aria-hidden className="size-4 animate-spin" />
-                          Loading environment…
-                        </div>
-                      ) : (
-                        <>
-                          <EnvToolbar
-                            connectionReady={connectionReady}
-                            onSaveDeploy={handleSaveDeploy}
-                          />
-                          <EnvTable />
-                          <DeployPanel deployments={deployments} polling={polling} />
-                        </>
-                      )}
+                    <div className="min-h-0 flex-1 overflow-auto border-b border-border/60 py-4">
+                      <EnvTable />
                     </div>
-                  </section>
-                ) : null}
-              </div>
+                    <div className="shrink-0 pt-4">
+                      <DeployPanel deployments={deployments} polling={polling} />
+                    </div>
+                  </>
+                )}
+              </section>
             </MainPanel>
-          </div>
+          ) : null}
         </div>
       </div>
       <Toaster />

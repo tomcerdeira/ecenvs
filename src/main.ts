@@ -1,6 +1,8 @@
-import { BrowserWindow, app } from 'electron';
+import { BrowserWindow, app, screen } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
+
+import type { WindowState } from './main/store';
 
 import { initAutoUpdate } from './main/auto-update';
 import { registerIpcHandlers } from './main/ipc/handlers';
@@ -13,6 +15,39 @@ if (started) {
 }
 
 let saveBoundsTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Default size tuned for connection grid + env table + toolbar (not full-screen on typical laptops). */
+const DEFAULT_WINDOW = { width: 1280, height: 820 } as const;
+const MIN_WINDOW = { width: 720, height: 520 } as const;
+
+/**
+ * Fit width/height within the primary display work area, enforce minimums, and return a centered
+ * or clamped position so restored windows are never off-screen after display changes.
+ */
+function getInitialWindowBounds(saved: WindowState | null): {
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+} {
+  const { workArea } = screen.getPrimaryDisplay();
+  const { x: wx, y: wy, width: sw, height: sh } = workArea;
+
+  const rawW = saved?.width ?? DEFAULT_WINDOW.width;
+  const rawH = saved?.height ?? DEFAULT_WINDOW.height;
+  const w = Math.max(MIN_WINDOW.width, Math.min(rawW, sw));
+  const h = Math.max(MIN_WINDOW.height, Math.min(rawH, sh));
+
+  if (saved && !saved.isMaximized) {
+    const x = Math.min(Math.max(saved.x, wx), wx + sw - w);
+    const y = Math.min(Math.max(saved.y, wy), wy + sh - h);
+    return { width: w, height: h, x, y };
+  }
+
+  const x = Math.round(wx + (sw - w) / 2);
+  const y = Math.round(wy + (sh - h) / 2);
+  return { width: w, height: h, x, y };
+}
 
 function persistWindowBounds(win: BrowserWindow): void {
   const b = win.getBounds();
@@ -35,19 +70,20 @@ function schedulePersistBounds(win: BrowserWindow): void {
 
 const createWindow = () => {
   const saved = appStore.get('windowState');
+  const bounds = getInitialWindowBounds(saved);
   const opts: Electron.BrowserWindowConstructorOptions = {
-    width: saved?.width ?? 800,
-    height: saved?.height ?? 600,
+    width: bounds.width,
+    height: bounds.height,
+    x: bounds.x,
+    y: bounds.y,
+    minWidth: MIN_WINDOW.width,
+    minHeight: MIN_WINDOW.height,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
   };
-  if (saved && !saved.isMaximized) {
-    opts.x = saved.x;
-    opts.y = saved.y;
-  }
 
   const mainWindow = new BrowserWindow(opts);
 

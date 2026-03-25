@@ -13,15 +13,15 @@ interface DiffEntry {
 function buildDiff(original: EnvRow[], current: EnvRow[]): DiffEntry[] {
   const origMap = new Map<string, string>();
   for (const r of original) {
-    const k = r.name.trim();
+    const k = String(r.name ?? '').trim();
     if (!k) continue;
-    origMap.set(k, r.value);
+    origMap.set(k, String(r.value ?? ''));
   }
   const curMap = new Map<string, string>();
   for (const r of current) {
-    const k = r.name.trim();
+    const k = String(r.name ?? '').trim();
     if (!k) continue;
-    curMap.set(k, r.value);
+    curMap.set(k, String(r.value ?? ''));
   }
 
   const names = new Set<string>([...origMap.keys(), ...curMap.keys()]);

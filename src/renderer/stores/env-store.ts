@@ -19,7 +19,9 @@ function newRow(partial?: Partial<Pick<EnvRow, 'name' | 'value'>>): EnvRow {
 /** Stable ordering for dirty comparison (ids are stable per row for the session). */
 export function rowsFingerprint(rows: EnvRow[]): string {
   const sorted = [...rows].sort((a, b) => a.id.localeCompare(b.id));
-  return JSON.stringify(sorted.map((r) => ({ name: r.name, value: r.value })));
+  return JSON.stringify(
+    sorted.map((r) => ({ name: String(r.name ?? ''), value: String(r.value ?? '') }))
+  );
 }
 
 /**
@@ -28,10 +30,14 @@ export function rowsFingerprint(rows: EnvRow[]): string {
  */
 type RevealedMap = Record<string, boolean>;
 
+function rowNameKey(r: Pick<EnvRow, 'name'>): string {
+  return String(r.name ?? '').trim();
+}
+
 export function getDuplicateTrimmedNames(rows: EnvRow[]): Set<string> {
   const counts = new Map<string, number>();
   for (const r of rows) {
-    const key = r.name.trim();
+    const key = rowNameKey(r);
     if (!key) continue;
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
@@ -77,8 +83,8 @@ export const useEnvStore = create<EnvState>((set, get) => ({
     for (const e of environment) {
       const row = {
         id: crypto.randomUUID(),
-        name: e.name,
-        value: e.value,
+        name: String(e.name ?? ''),
+        value: String(e.value ?? ''),
       };
       if (e.source === 'secret') {
         secretRows.push(row);
@@ -116,7 +122,13 @@ export const useEnvStore = create<EnvState>((set, get) => ({
 
   updateRow: (id, patch) => {
     set((s) => ({
-      rows: s.rows.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+      rows: s.rows.map((r) => {
+        if (r.id !== id) return r;
+        const merged = { ...r, ...patch };
+        merged.name = String(merged.name ?? '');
+        merged.value = String(merged.value ?? '');
+        return merged;
+      }),
     }));
   },
 
@@ -152,14 +164,21 @@ export function selectFilteredRows(state: EnvState): EnvRow[] {
   const q = state.searchQuery.trim().toLowerCase();
   const plain = state.rows;
   if (!q) return plain;
-  return plain.filter((r) => r.name.toLowerCase().includes(q));
+  return plain.filter((r) => rowNameKey(r).toLowerCase().includes(q));
 }
 
 export function selectFilteredSecretRows(state: EnvState): EnvRow[] {
   const q = state.searchQuery.trim().toLowerCase();
   const secrets = state.secretRows;
   if (!q) return secrets;
-  return secrets.filter((r) => r.name.toLowerCase().includes(q));
+  return secrets.filter((r) => rowNameKey(r).toLowerCase().includes(q));
+}
+
+/** Count of plain rows matching the current name filter (for toolbar summary). */
+export function selectFilteredPlainCount(state: EnvState): number {
+  const q = state.searchQuery.trim().toLowerCase();
+  if (!q) return state.rows.length;
+  return state.rows.filter((r) => rowNameKey(r).toLowerCase().includes(q)).length;
 }
 
 export function selectIsDirty(state: EnvState): boolean {

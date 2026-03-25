@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 
-import { ScrollArea } from '@renderer/components/ui/scroll-area';
 import { cn } from '@renderer/lib/utils';
 
 interface MainPanelProps {
@@ -10,8 +9,8 @@ interface MainPanelProps {
 
 export function MainPanel({ children, className }: MainPanelProps) {
   return (
-    <ScrollArea className={cn('min-h-0 flex-1', className)}>
-      <div className="min-h-[min(100%,480px)] p-6 sm:p-8">{children}</div>
-    </ScrollArea>
+    <div className={cn('flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-6', className)}>
+      {children}
+    </div>
   );
 }
