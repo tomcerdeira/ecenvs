@@ -9,8 +9,8 @@ import type {
   GetDeploymentsPayload,
   GetEnvVarsData,
   GetEnvVarsPayload,
-  ListClustersPayload,
   ListServicesPayload,
+  ProfileRegionPayload,
   RecentConnection,
   RecentConnectionPayload,
   SaveEnvVarsPayload,
@@ -72,6 +72,19 @@ function failMsg(code: string, message: string): ApiResult<never> {
   return { ok: false, error: { code, message } };
 }
 
+const INVALID_PROFILE_REGION: ApiResult<never> = failMsg(
+  'INVALID_PAYLOAD',
+  'profile and region are required'
+);
+
+function parseProfileRegion(payload: unknown): ProfileRegionPayload | null {
+  const p = payload as ProfileRegionPayload | undefined;
+  if (!isNonEmptyString(p?.profile) || !isNonEmptyString(p?.region)) {
+    return null;
+  }
+  return { profile: p.profile, region: p.region };
+}
+
 export function registerIpcHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.LIST_PROFILES, async (): Promise<ApiResult<string[]>> => {
     try {
@@ -93,11 +106,9 @@ export function registerIpcHandlers(): void {
     IPC_CHANNELS.LIST_CLUSTERS,
     async (_evt, payload: unknown): Promise<ApiResult<string[]>> => {
       try {
-        const p = payload as ListClustersPayload;
-        if (!isNonEmptyString(p?.profile) || !isNonEmptyString(p?.region)) {
-          return failMsg('INVALID_PAYLOAD', 'profile and region are required');
-        }
-        const client = createEcsClient(p.profile, p.region);
+        const pr = parseProfileRegion(payload);
+        if (!pr) return INVALID_PROFILE_REGION;
+        const client = createEcsClient(pr.profile, pr.region);
         const arns = await listAllClusterArns(client);
         return ok(arns);
       } catch (e) {
@@ -110,14 +121,13 @@ export function registerIpcHandlers(): void {
     IPC_CHANNELS.LIST_SERVICES,
     async (_evt, payload: unknown): Promise<ApiResult<ServiceInfo[]>> => {
       try {
+        const pr = parseProfileRegion(payload);
+        if (!pr) return INVALID_PROFILE_REGION;
         const p = payload as ListServicesPayload;
-        if (!isNonEmptyString(p?.profile) || !isNonEmptyString(p?.region)) {
-          return failMsg('INVALID_PAYLOAD', 'profile and region are required');
-        }
         if (!isNonEmptyString(p?.clusterArn)) {
           return failMsg('INVALID_PAYLOAD', 'clusterArn is required');
         }
-        const client = createEcsClient(p.profile, p.region);
+        const client = createEcsClient(pr.profile, pr.region);
         const infos = await listServiceInfos(client, p.clusterArn);
         return ok(infos);
       } catch (e) {
@@ -130,14 +140,13 @@ export function registerIpcHandlers(): void {
     IPC_CHANNELS.GET_DEPLOYMENTS,
     async (_evt, payload: unknown): Promise<ApiResult<DeploymentInfo[]>> => {
       try {
+        const pr = parseProfileRegion(payload);
+        if (!pr) return INVALID_PROFILE_REGION;
         const p = payload as GetDeploymentsPayload;
-        if (!isNonEmptyString(p?.profile) || !isNonEmptyString(p?.region)) {
-          return failMsg('INVALID_PAYLOAD', 'profile and region are required');
-        }
         if (!isNonEmptyString(p?.clusterArn) || !isNonEmptyString(p?.serviceName)) {
           return failMsg('INVALID_PAYLOAD', 'clusterArn and serviceName are required');
         }
-        const client = createEcsClient(p.profile, p.region);
+        const client = createEcsClient(pr.profile, pr.region);
         const deployments = await getDeploymentsForService(client, p.clusterArn, p.serviceName);
         return ok(deployments);
       } catch (e) {
@@ -150,14 +159,13 @@ export function registerIpcHandlers(): void {
     IPC_CHANNELS.GET_ENV_VARS,
     async (_evt, payload: unknown): Promise<ApiResult<GetEnvVarsData>> => {
       try {
+        const pr = parseProfileRegion(payload);
+        if (!pr) return INVALID_PROFILE_REGION;
         const p = payload as GetEnvVarsPayload;
-        if (!isNonEmptyString(p?.profile) || !isNonEmptyString(p?.region)) {
-          return failMsg('INVALID_PAYLOAD', 'profile and region are required');
-        }
         if (!isNonEmptyString(p?.clusterArn) || !isNonEmptyString(p?.serviceName)) {
           return failMsg('INVALID_PAYLOAD', 'clusterArn and serviceName are required');
         }
-        const client = createEcsClient(p.profile, p.region);
+        const client = createEcsClient(pr.profile, pr.region);
         const taskDefArn = await getServiceTaskDefinitionArn(client, p.clusterArn, p.serviceName);
         if (!p.containerName?.trim()) {
           const containerNames = await getTaskDefinitionContainerNames(client, taskDefArn);
@@ -190,10 +198,12 @@ export function registerIpcHandlers(): void {
     IPC_CHANNELS.ADD_RECENT,
     async (_evt, payload: unknown): Promise<ApiResult<{ ok: true }>> => {
       try {
+        const pr = parseProfileRegion(payload);
+        if (!pr) {
+          return failMsg('INVALID_PAYLOAD', 'All recent connection fields are required');
+        }
         const p = payload as RecentConnectionPayload;
         if (
-          !isNonEmptyString(p?.profile) ||
-          !isNonEmptyString(p?.region) ||
           !isNonEmptyString(p?.clusterArn) ||
           !isNonEmptyString(p?.serviceName) ||
           !isNonEmptyString(p?.containerName)
@@ -201,8 +211,8 @@ export function registerIpcHandlers(): void {
           return failMsg('INVALID_PAYLOAD', 'All recent connection fields are required');
         }
         addRecentConnection({
-          profile: p.profile.trim(),
-          region: p.region.trim(),
+          profile: pr.profile.trim(),
+          region: pr.region.trim(),
           clusterArn: p.clusterArn.trim(),
           serviceName: p.serviceName.trim(),
           containerName: p.containerName.trim(),
@@ -219,10 +229,9 @@ export function registerIpcHandlers(): void {
     IPC_CHANNELS.SAVE_ENV_VARS,
     async (_evt, payload: unknown): Promise<ApiResult<SaveEnvVarsResult>> => {
       try {
+        const pr = parseProfileRegion(payload);
+        if (!pr) return INVALID_PROFILE_REGION;
         const p = payload as SaveEnvVarsPayload;
-        if (!isNonEmptyString(p?.profile) || !isNonEmptyString(p?.region)) {
-          return failMsg('INVALID_PAYLOAD', 'profile and region are required');
-        }
         if (!isNonEmptyString(p?.clusterArn) || !isNonEmptyString(p?.serviceName)) {
           return failMsg('INVALID_PAYLOAD', 'clusterArn and serviceName are required');
         }
@@ -232,7 +241,7 @@ export function registerIpcHandlers(): void {
         if (!Array.isArray(p.environment)) {
           return failMsg('INVALID_PAYLOAD', 'environment must be an array');
         }
-        const client = createEcsClient(p.profile, p.region);
+        const client = createEcsClient(pr.profile, pr.region);
         const result = await saveContainerPlainEnvironment(
           client,
           p.clusterArn,

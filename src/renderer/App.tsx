@@ -13,6 +13,7 @@ import { Toaster } from '@renderer/components/ui/sonner';
 import { TooltipProvider } from '@renderer/components/ui/tooltip';
 import { useDeploymentPolling } from '@renderer/hooks/useDeploymentPolling';
 import { addRecent, getEnvironmentForContainer, saveEnvVars } from '@renderer/lib/api';
+import { getErrorMessage } from '@renderer/lib/utils';
 import { useConnectionStore } from '@renderer/stores/connection-store';
 import { useEnvStore } from '@renderer/stores/env-store';
 
@@ -133,8 +134,7 @@ function AppContent() {
         }
       } catch (e) {
         if (id !== envRequestId.current) return;
-        const msg = e instanceof Error ? e.message : String(e);
-        toast.error('Failed to load environment', { description: msg });
+        toast.error('Failed to load environment', { description: getErrorMessage(e) });
         clearEnv();
       } finally {
         if (id === envRequestId.current) setEnvLoading(false);

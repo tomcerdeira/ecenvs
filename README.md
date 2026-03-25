@@ -101,6 +101,7 @@ Local installers are produced with `npm run make`. Artifacts land under `out/mak
 
 - **Icons**: Source files live in [`assets/icons/`](./assets/icons/) (`icon.png`, `icon.icns`, `icon.ico`). Replace the placeholder artwork with your branding; large binaries can be tracked with [Git LFS](https://git-lfs.com/) if you prefer not to bloat the repo.
 - **Publishing to GitHub**: `npm run publish` uploads build artifacts to GitHub Releases. In CI, set `GITHUB_TOKEN` with permission to create releases and upload assets. **Do not commit tokens**; use repository secrets only.
+- **macOS distribution**: Builds downloaded onto another Mac should be signed with a **Developer ID Application** certificate and notarized with Apple. In CI that means configuring both signing certificate secrets (for example `CSC_LINK` / `CSC_KEY_PASSWORD`) and one notarization strategy. Local unsigned `dmg` files are acceptable for self-testing, but Gatekeeper can label downloaded unsigned apps as damaged and refuse to open them.
 - **Auto-update**: The app uses [`update-electron-app`](https://github.com/electron/update-electron-app) in a packaged build, which checks [Electron’s update service](https://update.electronjs.org) for releases published from this repository. **macOS** auto-updates in production expect a **Developer ID** signed app, **hardened runtime**, and **notarization**; unsigned `.dmg` installs do not get a reliable auto-update experience.
 - **Linux**: Electron’s built-in auto-updater does not support Linux; distribute `.deb`/`.rpm` through your own channels.
 
@@ -108,6 +109,7 @@ Local installers are produced with `npm run make`. Artifacts land under `out/mak
 
 - **AWS errors / access denied** — Confirm your profile, region, and IAM policy include the actions in [IAM permissions](#iam-permissions).
 - **Build failures** — Run `npm ci` from a clean tree; ensure Node matches the [Prerequisites](#prerequisites).
+- **`"<app>" is damaged and can't be opened` on macOS** — The downloaded build was not signed and notarized for Gatekeeper. Publish from CI with Apple signing secrets configured, or for a trusted local test build remove quarantine manually after copying the app out of the `dmg`.
 
 ## Contributing
 

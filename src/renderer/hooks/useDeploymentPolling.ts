@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import * as api from '@renderer/lib/api';
+import { getErrorMessage } from '@renderer/lib/utils';
 import type { DeploymentInfo, GetDeploymentsPayload } from '@shared/types';
 
 const POLL_MS = 5000;
@@ -69,8 +70,7 @@ export function useDeploymentPolling(base: GetDeploymentsPayload | null) {
         });
       }
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      toast.error('Failed to poll deployment status', { description: msg });
+      toast.error('Failed to poll deployment status', { description: getErrorMessage(e) });
     }
   }, [base, stop]);
 

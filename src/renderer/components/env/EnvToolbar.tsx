@@ -23,6 +23,7 @@ import {
   serializeDotEnv,
   serializeEnvJson,
 } from '@renderer/lib/parsers';
+import { getErrorMessage } from '@renderer/lib/utils';
 import {
   getDuplicateTrimmedNames,
   selectFilteredPlainCount,
@@ -83,8 +84,7 @@ export function EnvToolbar({
           description: `${vars.length} variable(s) loaded.`,
         });
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        toast.error('Import failed', { description: msg });
+        toast.error('Import failed', { description: getErrorMessage(e) });
       }
     },
     [replacePlainRows]
@@ -158,8 +158,7 @@ export function EnvToolbar({
       await onSaveDeploy();
       setSaveOpen(false);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      toast.error('Save failed', { description: msg });
+      toast.error('Save failed', { description: getErrorMessage(e) });
     } finally {
       setSaving(false);
     }

@@ -5,8 +5,9 @@ name: Release
 # committing version bumps to the repo. Parallel matrix jobs upload platform assets
 # to the same release.
 #
-# For signed / notarized macOS builds in CI, add repository secrets and wire env here, e.g.:
-#   APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID, CSC_LINK, CSC_KEY_PASSWORD
+# For signed / notarized macOS builds in CI, configure signing cert secrets plus one notarization
+# strategy (Apple ID, App Store Connect API key, or keychain profile). This workflow already
+# forwards the common env vars used by Electron Forge / @electron-notarize.
 
 on:
   workflow_run:
@@ -32,6 +33,19 @@ jobs:
 
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      APPLE_SIGN: ${{ secrets.APPLE_SIGN }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+      APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+      APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+      APPLE_KEYCHAIN_PROFILE: ${{ secrets.APPLE_KEYCHAIN_PROFILE }}
+      APPLE_KEYCHAIN: ${{ secrets.APPLE_KEYCHAIN }}
+      APPLE_SIGN_IDENTITY: ${{ secrets.APPLE_SIGN_IDENTITY }}
+      CSC_LINK: ${{ secrets.CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+      CSC_NAME: ${{ secrets.CSC_NAME }}
 
     steps:
       - name: Checkout
@@ -47,6 +61,19 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Prepare Apple API key file
+        if: runner.os == 'macOS' && env.APPLE_API_KEY != ''
+        shell: bash
+        run: |
+          if [[ -f "$APPLE_API_KEY" ]]; then
+            exit 0
+          fi
+
+          key_path="$RUNNER_TEMP/AuthKey_${APPLE_API_KEY_ID:-notary}.p8"
+          printf '%s' "$APPLE_API_KEY" > "$key_path"
+          chmod 600 "$key_path"
+          echo "APPLE_API_KEY=$key_path" >> "$GITHUB_ENV"
 
       - name: Set release version in package.json
         run: |

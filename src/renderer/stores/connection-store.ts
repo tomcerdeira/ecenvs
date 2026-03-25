@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { toast } from 'sonner';
 
 import * as api from '@renderer/lib/api';
+import { getErrorMessage } from '@renderer/lib/utils';
 import type { RecentConnectionPayload, ServiceInfo } from '@shared/types';
 
 export type ConnectionLoading = {
@@ -72,8 +73,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
         loading: { ...s.loading, profiles: false, regions: false },
       }));
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      toast.error('Failed to load profiles or regions', { description: msg });
+      toast.error('Failed to load profiles or regions', { description: getErrorMessage(e) });
       set((s) => ({
         ...s,
         loading: { ...s.loading, profiles: false, regions: false },
@@ -127,8 +127,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
         loading: { ...s.loading, clusters: false },
       }));
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      toast.error('Failed to load clusters', { description: msg });
+      toast.error('Failed to load clusters', { description: getErrorMessage(e) });
       set((s) => ({ ...s, loading: { ...s.loading, clusters: false } }));
     }
   },
@@ -162,8 +161,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
           loading: { ...s.loading, services: false },
         }));
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        toast.error('Failed to load services', { description: msg });
+        toast.error('Failed to load services', { description: getErrorMessage(e) });
         set((s) => ({ ...s, loading: { ...s.loading, services: false } }));
       }
     })();
@@ -198,8 +196,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
           loading: { ...s.loading, containers: false },
         }));
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        toast.error('Failed to load containers', { description: msg });
+        toast.error('Failed to load containers', { description: getErrorMessage(e) });
         set((s) => ({ ...s, loading: { ...s.loading, containers: false } }));
       }
     })();
@@ -255,8 +252,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
         loading: { ...s.loading, containers: false },
       }));
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      toast.error('Failed to apply recent connection', { description: msg });
+      toast.error('Failed to apply recent connection', { description: getErrorMessage(e) });
       set((s) => ({
         ...s,
         loading: { ...idleLoading },

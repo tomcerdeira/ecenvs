@@ -12,3 +12,9 @@ export const IPC_CHANNELS = {
 } as const;
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];
+
+/** Main process → renderer `webContents.send` / `ipcRenderer.on` names. */
+export const MAIN_TO_RENDERER = {
+  THEME: 'theme-from-main',
+  APPLY_RECENT: 'apply-recent',
+} as const;

@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+import { getErrorMessage } from '@shared/errors';
+
 const AWS_DIR = path.join(os.homedir(), '.aws');
 const CREDENTIALS_PATH = path.join(AWS_DIR, 'credentials');
 const CONFIG_PATH = path.join(AWS_DIR, 'config');
@@ -50,8 +52,7 @@ export function listAwsProfiles():
       }
     }
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return { ok: false, message: `Failed to read credentials file: ${msg}` };
+    return { ok: false, message: `Failed to read credentials file: ${getErrorMessage(e)}` };
   }
 
   try {
@@ -65,8 +66,7 @@ export function listAwsProfiles():
       }
     }
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return { ok: false, message: `Failed to read config file: ${msg}` };
+    return { ok: false, message: `Failed to read config file: ${getErrorMessage(e)}` };
   }
 
   if (profiles.size === 0 && !fs.existsSync(CREDENTIALS_PATH) && !fs.existsSync(CONFIG_PATH)) {

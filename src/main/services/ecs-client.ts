@@ -7,6 +7,7 @@ import {
   RegisterTaskDefinitionCommand,
   UpdateServiceCommand,
   type Deployment,
+  type Failure,
   type RegisterTaskDefinitionRequest,
   type Service,
   type TaskDefinition,
@@ -26,6 +27,12 @@ export function createEcsClient(profile: string, region: string): ECSClient {
     region,
     credentials: fromIni({ profile }),
   });
+}
+
+function throwIfDescribeServicesFailures(failures: Failure[] | undefined): void {
+  if (!failures?.length) return;
+  const msg = failures.map((f) => f.reason ?? 'unknown').join('; ');
+  throw new Error(`DescribeServices failed: ${msg}`);
 }
 
 export async function listAllClusterArns(client: ECSClient): Promise<string[]> {
@@ -70,10 +77,7 @@ export async function describeServicesInfo(
       services: serviceArns,
     })
   );
-  if (out.failures && out.failures.length > 0) {
-    const msg = out.failures.map((f) => f.reason ?? 'unknown').join('; ');
-    throw new Error(`DescribeServices failed: ${msg}`);
-  }
+  throwIfDescribeServicesFailures(out.failures);
   const services = out.services ?? [];
   return services.map((s: Service) => ({
     serviceName: s.serviceName ?? serviceNameFromArn(s.serviceArn ?? ''),
@@ -111,10 +115,7 @@ export async function getServiceTaskDefinitionArn(
       services: [serviceName],
     })
   );
-  if (out.failures && out.failures.length > 0) {
-    const msg = out.failures.map((f) => f.reason ?? 'unknown').join('; ');
-    throw new Error(`DescribeServices failed: ${msg}`);
-  }
+  throwIfDescribeServicesFailures(out.failures);
   const arn = out.services?.[0]?.taskDefinition;
   if (!arn) {
     throw new Error(`Service not found or has no task definition: ${serviceName}`);
@@ -147,10 +148,7 @@ export async function getDeploymentsForService(
       services: [serviceName],
     })
   );
-  if (out.failures && out.failures.length > 0) {
-    const msg = out.failures.map((f) => f.reason ?? 'unknown').join('; ');
-    throw new Error(`DescribeServices failed: ${msg}`);
-  }
+  throwIfDescribeServicesFailures(out.failures);
   const svc = out.services?.[0];
   const deployments = svc?.deployments ?? [];
   return deployments.map(mapDeployment);

@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
 
-import { IPC_CHANNELS } from '@shared/channels';
+import { IPC_CHANNELS, MAIN_TO_RENDERER } from '@shared/channels';
 import type {
   ApiResult,
   DeploymentInfo,
@@ -50,14 +50,14 @@ const api = {
         handler(mode);
       }
     };
-    ipcRenderer.on('theme-from-main', fn);
-    return () => ipcRenderer.removeListener('theme-from-main', fn);
+    ipcRenderer.on(MAIN_TO_RENDERER.THEME, fn);
+    return () => ipcRenderer.removeListener(MAIN_TO_RENDERER.THEME, fn);
   },
 
   onApplyRecent: (handler: (r: RecentConnection) => void): (() => void) => {
     const fn = (_e: IpcRendererEvent, r: RecentConnection) => handler(r);
-    ipcRenderer.on('apply-recent', fn);
-    return () => ipcRenderer.removeListener('apply-recent', fn);
+    ipcRenderer.on(MAIN_TO_RENDERER.APPLY_RECENT, fn);
+    return () => ipcRenderer.removeListener(MAIN_TO_RENDERER.APPLY_RECENT, fn);
   },
 };
 

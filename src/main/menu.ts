@@ -1,14 +1,15 @@
 import { BrowserWindow, Menu, app, dialog, shell } from 'electron';
 
+import { MAIN_TO_RENDERER } from '@shared/channels';
 import type { RecentConnection } from '@shared/types';
 
 import { listRecentConnections } from './store';
 
-const GITHUB_URL = 'https://github.com';
+const GITHUB_REPO_URL = 'https://github.com/tomcerdeira/ecenvs';
 
 function sendTheme(mode: 'toggle' | 'light' | 'dark' | 'system'): void {
   const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
-  win?.webContents.send('theme-from-main', mode);
+  win?.webContents.send(MAIN_TO_RENDERER.THEME, mode);
 }
 
 export function buildAppMenu(): Menu {
@@ -23,7 +24,7 @@ export function buildAppMenu(): Menu {
           click: () => {
             const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
             const payload: RecentConnection = r;
-            win?.webContents.send('apply-recent', payload);
+            win?.webContents.send(MAIN_TO_RENDERER.APPLY_RECENT, payload);
           },
         }));
 
@@ -117,7 +118,7 @@ export function buildAppMenu(): Menu {
         : []),
       {
         label: 'GitHub repository',
-        click: () => void shell.openExternal(GITHUB_URL),
+        click: () => void shell.openExternal(GITHUB_REPO_URL),
       },
     ],
   });

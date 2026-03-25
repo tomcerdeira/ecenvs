@@ -18,7 +18,7 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "test": "node --test test/"
+    "test": "tsx --test test/parsers.test.ts && node --test test/smoke.test.mjs"
   },
   "keywords": [],
   "author": {
@@ -51,6 +51,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.2.2",
+    "tsx": "^4.21.0",
     "typescript": "~5.9.0",
     "typescript-eslint": "^8.57.2",
     "vite": "^5.4.21"

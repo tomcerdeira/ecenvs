@@ -11,11 +11,72 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 import path from 'node:path';
 
 const iconPath = path.resolve(process.cwd(), 'assets', 'icons', 'icon');
+const macAppBundleId = 'com.tomcerdeira.ecenvs';
+const isTruthyEnv = (value: string | undefined) =>
+  typeof value === 'string' && ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase());
+
+const shouldSignMacApp =
+  process.platform === 'darwin' &&
+  Boolean(
+    isTruthyEnv(process.env.APPLE_SIGN) ||
+    process.env.CSC_LINK ||
+    process.env.CSC_NAME ||
+    process.env.APPLE_SIGN_IDENTITY
+  );
+
+const macNotarizeConfig = (() => {
+  if (!shouldSignMacApp) {
+    return undefined;
+  }
+
+  const appleId = process.env.APPLE_ID;
+  const appleIdPassword = process.env.APPLE_APP_SPECIFIC_PASSWORD ?? process.env.APPLE_PASSWORD;
+  const teamId = process.env.APPLE_TEAM_ID;
+
+  if (appleId && appleIdPassword && teamId) {
+    return {
+      appleId,
+      appleIdPassword,
+      teamId,
+    };
+  }
+
+  const appleApiKey = process.env.APPLE_API_KEY;
+  const appleApiKeyId = process.env.APPLE_API_KEY_ID;
+  const appleApiIssuer = process.env.APPLE_API_ISSUER;
+
+  if (appleApiKey && appleApiKeyId && appleApiIssuer) {
+    return {
+      appleApiKey,
+      appleApiKeyId,
+      appleApiIssuer,
+    };
+  }
+
+  const keychainProfile = process.env.APPLE_KEYCHAIN_PROFILE;
+  const keychain = process.env.APPLE_KEYCHAIN;
+
+  if (keychainProfile) {
+    return keychain ? { keychainProfile, keychain } : { keychainProfile };
+  }
+
+  return undefined;
+})();
+
+if (shouldSignMacApp && process.env.CI && !macNotarizeConfig) {
+  throw new Error(
+    'macOS signing is enabled, but notarization credentials are missing. Configure Apple ID, API key, or keychain notarization settings before publishing a release.'
+  );
+}
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     icon: iconPath,
+    appBundleId: macAppBundleId,
+    appCategoryType: 'public.app-category.developer-tools',
+    osxSign: shouldSignMacApp ? true : undefined,
+    osxNotarize: macNotarizeConfig,
   },
   rebuildConfig: {},
   makers: [

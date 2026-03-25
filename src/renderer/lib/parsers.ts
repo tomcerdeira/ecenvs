@@ -1,3 +1,4 @@
+import { getErrorMessage } from '@shared/errors';
 import type { PlainEnvVar } from '@shared/types';
 
 /**
@@ -26,7 +27,12 @@ export function parseDotEnv(text: string): PlainEnvVar[] {
 }
 
 export function parseEnvJson(text: string): PlainEnvVar[] {
-  const data: unknown = JSON.parse(text);
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch (e) {
+    throw new Error(`Invalid JSON: ${getErrorMessage(e)}`);
+  }
   if (Array.isArray(data)) {
     const out: PlainEnvVar[] = [];
     for (const item of data) {
