@@ -31,7 +31,7 @@ Fix any ESLint issues (`npm run lint:fix` where appropriate). Formatting is enfo
 
 ## Branching and pull requests
 
-- Open pull requests against **`main`**.
+- Open pull requests against **`master`**.
 - Keep changes focused: one logical change per PR is easier to review.
 - In the PR description, note **what** changed and **why**, and link related issues if any.
 

@@ -1,6 +1,6 @@
 # ecenvs
 
-[![CI](https://github.com/tomcerdeira/ecenvs/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tomcerdeira/ecenvs/actions/workflows/ci.yml?query=branch%3Amain)
+[![CI](https://github.com/tomcerdeira/ecenvs/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/tomcerdeira/ecenvs/actions/workflows/ci.yml?query=branch%3Amaster)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/tomcerdeira/ecenvs?label=latest%20release)](https://github.com/tomcerdeira/ecenvs/releases/latest)
 

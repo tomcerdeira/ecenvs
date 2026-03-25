@@ -1,22 +1,29 @@
 name: Release
 
-# Publishes platform installers to GitHub Releases for the pushed tag.
-# Ensure package.json "version" matches the tag (e.g. tag v1.2.3 → version 1.2.3).
-# Parallel jobs each upload assets for the same release.
+# After a successful CI run on master, publishes installers to GitHub Releases.
+# Version is 1.0.<this workflow's run_number> so each release is unique without
+# committing version bumps to the repo. Parallel matrix jobs upload platform assets
+# to the same release.
 #
 # For signed / notarized macOS builds in CI, add repository secrets and wire env here, e.g.:
 #   APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID, CSC_LINK, CSC_KEY_PASSWORD
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
 
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
 jobs:
   publish:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master'
+
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -29,6 +36,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -38,6 +47,10 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Set release version in package.json
+        run: |
+          node -e "const fs=require('fs'); const v='1.0.'+process.env.GITHUB_RUN_NUMBER; const p=require('./package.json'); p.version=v; fs.writeFileSync('package.json', JSON.stringify(p,null,2)+'\n'); console.log('Publishing version',v);"
 
       - name: Publish to GitHub Releases
         run: npm run publish
