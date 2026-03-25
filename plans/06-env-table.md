@@ -17,19 +17,19 @@ Implement the core env editor: `EnvTable`, `EnvRow`, and `EnvToolbar` backed by 
 
 ## Files to create
 
-| Path | Description |
-|------|-------------|
-| `src/renderer/components/env/EnvTable.tsx` | shadcn `Table` with header (Name / Value / Actions). |
-| `src/renderer/components/env/EnvRow.tsx` | Single row: `Input` or masked display, reveal toggle, delete. |
-| `src/renderer/components/env/EnvToolbar.tsx` | Search input, “Add variable”, optional row count. |
-| `src/renderer/stores/env-store.ts` | Zustand: rows, originalRows, dirty, search, revealedRowId/set, actions. |
+| Path                                         | Description                                                             |
+| -------------------------------------------- | ----------------------------------------------------------------------- |
+| `src/renderer/components/env/EnvTable.tsx`   | shadcn `Table` with header (Name / Value / Actions).                    |
+| `src/renderer/components/env/EnvRow.tsx`     | Single row: `Input` or masked display, reveal toggle, delete.           |
+| `src/renderer/components/env/EnvToolbar.tsx` | Search input, “Add variable”, optional row count.                       |
+| `src/renderer/stores/env-store.ts`           | Zustand: rows, originalRows, dirty, search, revealedRowId/set, actions. |
 
 ## Files to modify
 
-| Path | Changes |
-|------|---------|
-| `src/renderer/App.tsx` | Render EnvToolbar + EnvTable below ConnectionPanel when container selected; on selection change, call `get-env-vars` and hydrate store. |
-| `src/renderer/main.tsx` | Ensure `<Toaster />` from `sonner` is mounted (if not already). |
+| Path                    | Changes                                                                                                                                 |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/renderer/App.tsx`  | Render EnvToolbar + EnvTable below ConnectionPanel when container selected; on selection change, call `get-env-vars` and hydrate store. |
+| `src/renderer/main.tsx` | Ensure `<Toaster />` from `sonner` is mounted (if not already).                                                                         |
 
 ## Dependencies to install
 

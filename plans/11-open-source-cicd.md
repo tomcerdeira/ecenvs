@@ -17,19 +17,19 @@ Finalize the repo for open source: expand `README.md` with screenshots/GIF, feat
 
 ## Files to create
 
-| Path | Description |
-|------|-------------|
-| `CONTRIBUTING.md` | Dev setup, branch strategy, PR checklist, Conventional Commits, code style pointers. |
-| `.github/workflows/ci.yml` | On `pull_request` and `push` to `main`: lint, typecheck, test (add tests if present). |
-| `.github/workflows/build.yml` | On `push` to `main`: build Electron artifacts, upload artifacts. |
-| `.github/workflows/release.yml` | On tag `v*`: build, publish to GitHub Releases (Forge publish). |
-| `.github/ISSUE_TEMPLATE/bug_report.md` | YAML frontmatter + body sections. |
-| `.github/ISSUE_TEMPLATE/feature_request.md` | YAML frontmatter + body sections. |
+| Path                                        | Description                                                                           |
+| ------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `CONTRIBUTING.md`                           | Dev setup, branch strategy, PR checklist, Conventional Commits, code style pointers.  |
+| `.github/workflows/ci.yml`                  | On `pull_request` and `push` to `main`: lint, typecheck, test (add tests if present). |
+| `.github/workflows/build.yml`               | On `push` to `main`: build Electron artifacts, upload artifacts.                      |
+| `.github/workflows/release.yml`             | On tag `v*`: build, publish to GitHub Releases (Forge publish).                       |
+| `.github/ISSUE_TEMPLATE/bug_report.md`      | YAML frontmatter + body sections.                                                     |
+| `.github/ISSUE_TEMPLATE/feature_request.md` | YAML frontmatter + body sections.                                                     |
 
 ## Files to modify
 
-| Path | Changes |
-|------|---------|
+| Path        | Changes                                                                                                                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `README.md` | Full documentation: hero, badges, screenshots, feature list, install from releases, build from source, architecture diagram (mermaid or image), IAM permissions table, troubleshooting, license. |
 
 ## Dependencies to install

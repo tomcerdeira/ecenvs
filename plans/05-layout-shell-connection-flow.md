@@ -16,22 +16,22 @@ Build the application shell (sidebar + main panel + header), compose profile/reg
 
 ## Files to create
 
-| Path | Description |
-|------|-------------|
-| `src/renderer/components/layout/Sidebar.tsx` | App branding, nav placeholder, connection summary. |
-| `src/renderer/components/layout/MainPanel.tsx` | Scrollable main area for connection + future table. |
-| `src/renderer/components/layout/Header.tsx` | Title, optional actions slot. |
-| `src/renderer/components/connection/ConnectionSelect.tsx` | Labeled `Select` wrapper (label + shadcn Select). |
-| `src/renderer/components/connection/ConnectionPanel.tsx` | Profile, region, cluster, service, container selects; buttons: “Load clusters” / refresh as needed. |
-| `src/renderer/stores/connection-store.ts` | Zustand store: `profile`, `region`, `cluster`, `serviceName`, `containerName`, lists, loading flags, errors, actions. |
-| `src/renderer/lib/api.ts` | Thin typed functions calling `window.api.*` with consistent error handling. |
+| Path                                                      | Description                                                                                                           |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `src/renderer/components/layout/Sidebar.tsx`              | App branding, nav placeholder, connection summary.                                                                    |
+| `src/renderer/components/layout/MainPanel.tsx`            | Scrollable main area for connection + future table.                                                                   |
+| `src/renderer/components/layout/Header.tsx`               | Title, optional actions slot.                                                                                         |
+| `src/renderer/components/connection/ConnectionSelect.tsx` | Labeled `Select` wrapper (label + shadcn Select).                                                                     |
+| `src/renderer/components/connection/ConnectionPanel.tsx`  | Profile, region, cluster, service, container selects; buttons: “Load clusters” / refresh as needed.                   |
+| `src/renderer/stores/connection-store.ts`                 | Zustand store: `profile`, `region`, `cluster`, `serviceName`, `containerName`, lists, loading flags, errors, actions. |
+| `src/renderer/lib/api.ts`                                 | Thin typed functions calling `window.api.*` with consistent error handling.                                           |
 
 ## Files to modify
 
-| Path | Changes |
-|------|---------|
-| `src/renderer/App.tsx` | Compose Sidebar + MainPanel; place ConnectionPanel in main content. |
-| `src/renderer/main.tsx` | Ensure React root and any providers still wrap App. |
+| Path                    | Changes                                                             |
+| ----------------------- | ------------------------------------------------------------------- |
+| `src/renderer/App.tsx`  | Compose Sidebar + MainPanel; place ConnectionPanel in main content. |
+| `src/renderer/main.tsx` | Ensure React root and any providers still wrap App.                 |
 
 ## Dependencies to install
 

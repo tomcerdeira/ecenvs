@@ -17,22 +17,22 @@ Add `lib/parsers.ts` for `.env` and JSON serialization, export buttons (Blob dow
 
 ## Files to create
 
-| Path | Description |
-|------|-------------|
-| `src/renderer/lib/parsers.ts` | Parse `.env` (KEY=value, quotes, comments), JSON array/object formats; serialize back. |
-| `src/renderer/components/deploy/DeployPanel.tsx` | Shows active deployment status. |
-| `src/renderer/components/deploy/DeployCard.tsx` | Badges for phase/status, timestamps. |
-| `src/renderer/hooks/useDeploymentPolling.ts` | Poll `get-deployments` every 5s until `COMPLETED` / `FAILED` / timeout. |
+| Path                                             | Description                                                                            |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `src/renderer/lib/parsers.ts`                    | Parse `.env` (KEY=value, quotes, comments), JSON array/object formats; serialize back. |
+| `src/renderer/components/deploy/DeployPanel.tsx` | Shows active deployment status.                                                        |
+| `src/renderer/components/deploy/DeployCard.tsx`  | Badges for phase/status, timestamps.                                                   |
+| `src/renderer/hooks/useDeploymentPolling.ts`     | Poll `get-deployments` every 5s until `COMPLETED` / `FAILED` / timeout.                |
 
 ## Files to modify
 
-| Path | Changes |
-|------|---------|
-| `src/renderer/components/env/EnvToolbar.tsx` | Add Import, Export JSON, Export `.env` buttons. |
-| `src/main/services/ecs-client.ts` | Full `RegisterTaskDefinition` (clone task def, patch env for target container) + `UpdateService`. |
-| `src/main/ipc/handlers.ts` | `save-env-vars` builds new task def revision and triggers service update; `get-deployments` returns ECS deployment info. |
-| `src/preload/index.ts` | Expose save + deployment APIs. |
-| `src/renderer/App.tsx` or layout | Global keyboard shortcut for save (prevent default in inputs where needed). |
+| Path                                         | Changes                                                                                                                  |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `src/renderer/components/env/EnvToolbar.tsx` | Add Import, Export JSON, Export `.env` buttons.                                                                          |
+| `src/main/services/ecs-client.ts`            | Full `RegisterTaskDefinition` (clone task def, patch env for target container) + `UpdateService`.                        |
+| `src/main/ipc/handlers.ts`                   | `save-env-vars` builds new task def revision and triggers service update; `get-deployments` returns ECS deployment info. |
+| `src/preload/index.ts`                       | Expose save + deployment APIs.                                                                                           |
+| `src/renderer/App.tsx` or layout             | Global keyboard shortcut for save (prevent default in inputs where needed).                                              |
 
 ## Dependencies to install
 

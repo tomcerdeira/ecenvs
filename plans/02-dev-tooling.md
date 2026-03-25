@@ -16,22 +16,22 @@ Add static analysis and formatting (`eslint`, `prettier`), `lint` / `typecheck` 
 
 ## Files to create
 
-| Path | Description |
-|------|-------------|
+| Path                                  | Description                                                                                                |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `.eslintrc.cjs` or `eslint.config.js` | ESLint flat config or legacy; extend recommended TypeScript + React rules if React is already in template. |
-| `.prettierrc` | Prettier options (semi, singleQuote, trailingComma, printWidth). |
-| `.prettierignore` | Ignore `out/`, `dist/`, `node_modules/`, lockfiles if desired. |
-| `src/renderer/styles/globals.css` | Tailwind v4 entry: `@import "tailwindcss";` and optional `@theme inline { ... }` placeholder. |
+| `.prettierrc`                         | Prettier options (semi, singleQuote, trailingComma, printWidth).                                           |
+| `.prettierignore`                     | Ignore `out/`, `dist/`, `node_modules/`, lockfiles if desired.                                             |
+| `src/renderer/styles/globals.css`     | Tailwind v4 entry: `@import "tailwindcss";` and optional `@theme inline { ... }` placeholder.              |
 
 ## Files to modify
 
-| Path | Changes |
-|------|---------|
-| `package.json` | Add scripts: `"lint"`, `"lint:fix"`, `"typecheck"`, `"format"` (optional). Add devDependencies: `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh` (if React), `prettier`, `eslint-config-prettier`, Tailwind v4 packages (see below). |
-| `vite.renderer.config.ts` (or equivalent) | Add `@tailwindcss/vite` plugin to the renderer Vite config. |
-| `src/renderer/**/*` entry (e.g. `main.tsx` or `index.tsx`) | Import `./styles/globals.css` (or correct relative path). |
-| `tsconfig.json` and/or `tsconfig.renderer.json` | Add `paths`: `"@shared/*": ["src/shared/*"]`, `"@renderer/*": ["src/renderer/*"]` (adjust to match actual `src` layout). |
-| `vite.renderer.config.ts` | Add `resolve.alias` mirroring `@shared` and `@renderer` so Vite resolves them. |
+| Path                                                       | Changes                                                                                                                                                                                                                                                                                     |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `package.json`                                             | Add scripts: `"lint"`, `"lint:fix"`, `"typecheck"`, `"format"` (optional). Add devDependencies: `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh` (if React), `prettier`, `eslint-config-prettier`, Tailwind v4 packages (see below). |
+| `vite.renderer.config.ts` (or equivalent)                  | Add `@tailwindcss/vite` plugin to the renderer Vite config.                                                                                                                                                                                                                                 |
+| `src/renderer/**/*` entry (e.g. `main.tsx` or `index.tsx`) | Import `./styles/globals.css` (or correct relative path).                                                                                                                                                                                                                                   |
+| `tsconfig.json` and/or `tsconfig.renderer.json`            | Add `paths`: `"@shared/*": ["src/shared/*"]`, `"@renderer/*": ["src/renderer/*"]` (adjust to match actual `src` layout).                                                                                                                                                                    |
+| `vite.renderer.config.ts`                                  | Add `resolve.alias` mirroring `@shared` and `@renderer` so Vite resolves them.                                                                                                                                                                                                              |
 
 **Note:** Create `src/shared/` as an empty folder (or add `src/shared/.gitkeep`) so `paths` resolve even before Commit 4.
 
@@ -56,7 +56,7 @@ Add React plugins only if the renderer uses React.
    - In renderer Vite config: `import tailwindcss from '@tailwindcss/vite'` and `plugins: [tailwindcss()]`.
    - In `globals.css`: start with:
      ```css
-     @import "tailwindcss";
+     @import 'tailwindcss';
      ```
    - Optionally add a minimal `@theme inline { }` block later; shadcn commit will expand this.
 

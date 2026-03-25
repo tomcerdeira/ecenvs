@@ -17,20 +17,20 @@ Add `DiffView` comparing `originalRows` vs current rows with added/removed/chang
 
 ## Files to create
 
-| Path | Description |
-|------|-------------|
+| Path                                       | Description                                                                                       |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------- |
 | `src/renderer/components/env/DiffView.tsx` | Side-by-side or unified diff list; color-code added (green), removed (red), changed (amber/blue). |
 
 ## Files to modify
 
-| Path | Changes |
-|------|---------|
-| `src/shared/types.ts` | Types for secret refs (`name`, `valueFrom` or ARN). |
-| `src/main/services/ecs-client.ts` | Include `secrets` in normalized env payload. |
-| `src/renderer/stores/env-store.ts` | Hold `secretRows` read-only separate from editable plain env. |
-| `src/renderer/components/env/EnvTable.tsx` or sibling | Render secrets section below or merged with read-only styling. |
-| `src/renderer/components/env/EnvRow.tsx` | Copy button using `navigator.clipboard.writeText` + `Tooltip` “Copied!” |
-| Save confirmation flow | Insert `DiffView` step before final `AlertDialog` confirm (Commit 7). |
+| Path                                                  | Changes                                                                 |
+| ----------------------------------------------------- | ----------------------------------------------------------------------- |
+| `src/shared/types.ts`                                 | Types for secret refs (`name`, `valueFrom` or ARN).                     |
+| `src/main/services/ecs-client.ts`                     | Include `secrets` in normalized env payload.                            |
+| `src/renderer/stores/env-store.ts`                    | Hold `secretRows` read-only separate from editable plain env.           |
+| `src/renderer/components/env/EnvTable.tsx` or sibling | Render secrets section below or merged with read-only styling.          |
+| `src/renderer/components/env/EnvRow.tsx`              | Copy button using `navigator.clipboard.writeText` + `Tooltip` “Copied!” |
+| Save confirmation flow                                | Insert `DiffView` step before final `AlertDialog` confirm (Commit 7).   |
 
 ## Dependencies to install
 

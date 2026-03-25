@@ -16,20 +16,20 @@ Initialize shadcn/ui (New York style, default dark theme) targeting `src/rendere
 
 ## Files to create
 
-| Path | Description |
-|------|-------------|
-| `components.json` | shadcn config (style: new-york, paths under `src/renderer`). |
+| Path                           | Description                                                                                                                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `components.json`              | shadcn config (style: new-york, paths under `src/renderer`).                                                                                                                                            |
 | `src/renderer/components/ui/*` | Generated shadcn components (button, badge, select, dialog, alert-dialog, input, label, checkbox, table, command, tooltip, popover, dropdown-menu, scroll-area, separator, sonner, skeleton, progress). |
 
 **Component count note:** The reference lists 16 named primitives; the list includes **17** names (`button` … `progress`). Implement **all listed** — treat “16 components” as the core set plus sonner/skeleton as needed; ensure **button, badge, select, dialog, alert-dialog, input, label, checkbox, table, command, tooltip, popover, dropdown-menu, scroll-area, separator, sonner, skeleton, progress** are present per project choice (merge overlapping “16” with README in repo).
 
 ## Files to modify
 
-| Path | Changes |
-|------|---------|
-| `src/renderer/styles/globals.css` | shadcn theme tokens (`:root`, `.dark`), `@layer base` for border-radius and body; add `--success`, `--warning` (and map to utilities if using `@theme`). |
+| Path                               | Changes                                                                                                                                                                                  |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/renderer/styles/globals.css`  | shadcn theme tokens (`:root`, `.dark`), `@layer base` for border-radius and body; add `--success`, `--warning` (and map to utilities if using `@theme`).                                 |
 | `src/renderer/main.tsx` (or entry) | Wrap app with any required providers (e.g. `TooltipProvider`); import `@fontsource/inter` and `@fontsource-variable/jetbrains-mono`; apply `font-sans` / `font-mono` classes per design. |
-| `package.json` | Dependencies from shadcn CLI + `@fontsource/inter`, `@fontsource-variable/jetbrains-mono`. |
+| `package.json`                     | Dependencies from shadcn CLI + `@fontsource/inter`, `@fontsource-variable/jetbrains-mono`.                                                                                               |
 
 ## Dependencies to install
 

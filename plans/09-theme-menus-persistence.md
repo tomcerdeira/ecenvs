@@ -17,20 +17,20 @@ Add Zustand `ui-store` for theme (`light` | `dark` | `system`), toggle `class="d
 
 ## Files to create
 
-| Path | Description |
-|------|-------------|
+| Path                              | Description                                                                                          |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `src/renderer/stores/ui-store.ts` | Theme state + `setTheme`, `toggle`, persist preference to `localStorage` (optional) or rely on main. |
-| `src/main/menu.ts` | `Menu.buildFromTemplate` or `Menu.setApplicationMenu`; wire accelerators. |
-| `src/main/store.ts` | `electron-store` instances: `recents` (max 5), `windowState` (x, y, width, height, maximized). |
+| `src/main/menu.ts`                | `Menu.buildFromTemplate` or `Menu.setApplicationMenu`; wire accelerators.                            |
+| `src/main/store.ts`               | `electron-store` instances: `recents` (max 5), `windowState` (x, y, width, height, maximized).       |
 
 ## Files to modify
 
-| Path | Changes |
-|------|---------|
-| `src/main/index.ts` | Import menu; set menu after `app.ready`; on `before-quit` save window state; on launch read and `BrowserWindow` bounds. |
-| `src/renderer/main.tsx` | `useEffect` to apply theme class from store; subscribe to system theme if `system` mode. |
-| `src/renderer/components/layout/Header.tsx` or `Sidebar.tsx` | Theme toggle control (Sun/Moon icon). |
-| Connection flow | On successful “connect” or deploy, push combo to recents via IPC `add-recent` or store from renderer with IPC. |
+| Path                                                         | Changes                                                                                                                 |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `src/main/index.ts`                                          | Import menu; set menu after `app.ready`; on `before-quit` save window state; on launch read and `BrowserWindow` bounds. |
+| `src/renderer/main.tsx`                                      | `useEffect` to apply theme class from store; subscribe to system theme if `system` mode.                                |
+| `src/renderer/components/layout/Header.tsx` or `Sidebar.tsx` | Theme toggle control (Sun/Moon icon).                                                                                   |
+| Connection flow                                              | On successful “connect” or deploy, push combo to recents via IPC `add-recent` or store from renderer with IPC.          |
 
 ## Dependencies to install
 

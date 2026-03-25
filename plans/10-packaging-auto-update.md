@@ -17,22 +17,22 @@ Configure Electron Forge makers (DMG, deb, rpm, Squirrel/NSIS for Windows), add 
 
 ## Files to create
 
-| Path | Description |
-|------|-------------|
+| Path                      | Description                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------- |
 | `src/main/auto-update.ts` | Import `update-electron-app` and call it when `app.isPackaged` (or per package docs). |
-| `assets/icons/icon.icns` | macOS icon. |
-| `assets/icons/icon.ico` | Windows icon. |
-| `assets/icons/icon.png` | Linux / generic (512×512 or multi-size). |
+| `assets/icons/icon.icns`  | macOS icon.                                                                           |
+| `assets/icons/icon.ico`   | Windows icon.                                                                         |
+| `assets/icons/icon.png`   | Linux / generic (512×512 or multi-size).                                              |
 
 ## Files to modify
 
-| Path | Changes |
-|------|---------|
-| `forge.config.ts` | Add `makers`: `@electron-forge/maker-dmg`, `@electron-forge/maker-deb`, `@electron-forge/maker-rpm`, `@electron-forge/maker-squirrel` **or** `@electron-forge/maker-wix` / `@electron-forge/maker-zip` per platform support matrix. |
-| `forge.config.ts` | `publishers`: `@electron-forge/publisher-github` with `owner`, `repo`, OAuth token via env in CI only. |
-| `forge.config.ts` | `packagerConfig.icon` paths per OS. |
-| `package.json` | `build`/`make` scripts; `repository` field for publisher. |
-| `src/main/index.ts` | Import `./auto-update` after `app.whenReady()` (or conditional). |
+| Path                | Changes                                                                                                                                                                                                                             |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `forge.config.ts`   | Add `makers`: `@electron-forge/maker-dmg`, `@electron-forge/maker-deb`, `@electron-forge/maker-rpm`, `@electron-forge/maker-squirrel` **or** `@electron-forge/maker-wix` / `@electron-forge/maker-zip` per platform support matrix. |
+| `forge.config.ts`   | `publishers`: `@electron-forge/publisher-github` with `owner`, `repo`, OAuth token via env in CI only.                                                                                                                              |
+| `forge.config.ts`   | `packagerConfig.icon` paths per OS.                                                                                                                                                                                                 |
+| `package.json`      | `build`/`make` scripts; `repository` field for publisher.                                                                                                                                                                           |
+| `src/main/index.ts` | Import `./auto-update` after `app.whenReady()` (or conditional).                                                                                                                                                                    |
 
 ## Dependencies to install
 

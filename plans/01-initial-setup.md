@@ -17,11 +17,11 @@ Bootstrap a minimal Electron application using Electron Forge with the Vite + Ty
 
 ## Files to create
 
-| Path | Description |
-|------|-------------|
+| Path         | Description                                                                                           |
+| ------------ | ----------------------------------------------------------------------------------------------------- |
 | `.gitignore` | Ignore `node_modules/`, build outputs, caches, OS junk, env files, coverage, and packaged installers. |
-| `README.md` | Project name, WIP badge, purpose, prerequisites, IAM permissions, dev commands, license line. |
-| `LICENSE` | MIT license text (year + copyright holder). |
+| `README.md`  | Project name, WIP badge, purpose, prerequisites, IAM permissions, dev commands, license line.         |
+| `LICENSE`    | MIT license text (year + copyright holder).                                                           |
 
 After running the scaffold, Electron Forge will also create (names may vary slightly by template version):
 

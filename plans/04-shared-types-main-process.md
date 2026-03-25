@@ -17,23 +17,23 @@ Define shared IPC channel names and TypeScript types for profiles, regions, clus
 
 ## Files to create
 
-| Path | Description |
-|------|-------------|
-| `src/shared/channels.ts` | String constants for every IPC channel (see list below). |
-| `src/shared/types.ts` | `ApiResult<T>`, `EnvVar`, `ContainerEnv`, `ServiceInfo`, deployment DTOs, error shapes. |
-| `src/main/services/aws-profiles.ts` | Parse `~/.aws/credentials` and `~/.aws/config` for profile names and default region hints. |
-| `src/main/services/ecs-client.ts` | Wrapper using `@aws-sdk/client-ecs`: `ListClusters`, `ListServices`, `DescribeServices`, `DescribeTaskDefinition`, `RegisterTaskDefinition`, `UpdateService`; inject credentials from profile via `@aws-sdk/credential-providers`. |
-| `src/main/ipc/handlers.ts` | Register all handlers; delegate to services; return `ApiResult` consistently. |
-| `src/preload/index.ts` | `contextBridge.exposeInMainWorld('api', { ... })` with methods matching channels. |
-| `src/preload/index.d.ts` or global `Window` augmentation | Type `window.api` for renderer. |
+| Path                                                     | Description                                                                                                                                                                                                                        |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/shared/channels.ts`                                 | String constants for every IPC channel (see list below).                                                                                                                                                                           |
+| `src/shared/types.ts`                                    | `ApiResult<T>`, `EnvVar`, `ContainerEnv`, `ServiceInfo`, deployment DTOs, error shapes.                                                                                                                                            |
+| `src/main/services/aws-profiles.ts`                      | Parse `~/.aws/credentials` and `~/.aws/config` for profile names and default region hints.                                                                                                                                         |
+| `src/main/services/ecs-client.ts`                        | Wrapper using `@aws-sdk/client-ecs`: `ListClusters`, `ListServices`, `DescribeServices`, `DescribeTaskDefinition`, `RegisterTaskDefinition`, `UpdateService`; inject credentials from profile via `@aws-sdk/credential-providers`. |
+| `src/main/ipc/handlers.ts`                               | Register all handlers; delegate to services; return `ApiResult` consistently.                                                                                                                                                      |
+| `src/preload/index.ts`                                   | `contextBridge.exposeInMainWorld('api', { ... })` with methods matching channels.                                                                                                                                                  |
+| `src/preload/index.d.ts` or global `Window` augmentation | Type `window.api` for renderer.                                                                                                                                                                                                    |
 
 ## Files to modify
 
-| Path | Changes |
-|------|---------|
-| `src/main/index.ts` (or `main.ts`) | Import and call `registerIpcHandlers()` after `app.whenReady()` (or appropriate lifecycle). |
+| Path                                 | Changes                                                                                         |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `src/main/index.ts` (or `main.ts`)   | Import and call `registerIpcHandlers()` after `app.whenReady()` (or appropriate lifecycle).     |
 | `forge.config.ts` / Vite main config | Ensure preload script path is built and referenced in `BrowserWindow` `webPreferences.preload`. |
-| `tsconfig` paths | Confirm `@shared/*` resolves for main, preload, renderer. |
+| `tsconfig` paths                     | Confirm `@shared/*` resolves for main, preload, renderer.                                       |
 
 ## Dependencies to install
 
@@ -106,7 +106,7 @@ Align parameter shapes with [Commit 5](./05-layout-shell-connection-flow.md).
 - [ ] `npm run typecheck` passes across main/preload/renderer.
 - [ ] Start app, open DevTools on renderer, run:
   ```js
-  await window.api.listProfiles()
+  await window.api.listProfiles();
   ```
   Expect `{ ok: true, data: [...] }` or a structured error if no `~/.aws` files.
 

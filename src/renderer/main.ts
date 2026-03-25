@@ -6,7 +6,7 @@
  * https://electronjs.org/docs/tutorial/process-model
  *
  * By default, Node.js integration in this file is disabled. When enabling Node.js integration
- * in a renderer process, please be aware of potential security implications. You can read
+ * in a renderer process, please be aware that there are security implications. You can read
  * more about security risks here:
  *
  * https://electronjs.org/docs/tutorial/security
@@ -26,4 +26,4 @@
  * ```
  */
 
-import './index.css';
+import './styles/globals.css';
