@@ -1,10 +1,14 @@
 import type {
   ApiResult,
+  EnvVar,
   GetEnvVarsPayload,
   ListClustersPayload,
   ListServicesPayload,
   ServiceInfo,
 } from '@shared/types';
+
+/** Payload with container selected — IPC returns `environment` array. */
+export type GetEnvVarsForContainerPayload = GetEnvVarsPayload & { containerName: string };
 
 function unwrap<T>(result: ApiResult<T>): T {
   if (result.ok) {
@@ -39,4 +43,14 @@ export async function getContainerNamesForService(
     throw new Error('Expected container list from API');
   }
   return data.containerNames;
+}
+
+export async function getEnvironmentForContainer(
+  payload: GetEnvVarsForContainerPayload
+): Promise<EnvVar[]> {
+  const data = unwrap(await window.api.getEnvVars(payload));
+  if (!('environment' in data)) {
+    throw new Error('Expected container environment from API');
+  }
+  return data.environment;
 }
